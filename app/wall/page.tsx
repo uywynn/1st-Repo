@@ -7,8 +7,6 @@ export default async function WallPage() {
   const { data } = await supabase.auth.getUser();
   if (!data.user) redirect("/login");
 
-  // Remember "now" before loading, so the wall can later ask for anything newer.
-  const since = new Date().toISOString();
   const { data: rows } = await supabase
     .from("uploads")
     .select("id, path, kind")
@@ -20,5 +18,5 @@ export default async function WallPage() {
     url: supabase.storage.from("uploads").getPublicUrl(r.path).data.publicUrl,
   }));
 
-  return <Wall initialItems={items} since={since} />;
+  return <Wall initialItems={items} />;
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "../_lib/supabase";
 import UploadForm from "./upload-form";
+import UploadTile from "../_lib/upload-tile";
 
 export default async function UploadPage() {
   const supabase = await createClient();
@@ -23,19 +24,14 @@ export default async function UploadPage() {
       <h2>Your uploads</h2>
       {!uploads?.length && <p>Nothing yet.</p>}
       <ul className="uploads">
-        {uploads?.map((u) => {
-          const url = supabase.storage.from("uploads").getPublicUrl(u.path).data.publicUrl;
-          return (
-            <li key={u.id}>
-              {u.kind === "video" ? (
-                <video src={url} controls preload="metadata" playsInline />
-              ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={url} alt="Uploaded photo" loading="lazy" />
-              )}
-            </li>
-          );
-        })}
+        {uploads?.map((u) => (
+          <UploadTile
+            key={u.id}
+            id={u.id}
+            kind={u.kind}
+            url={supabase.storage.from("uploads").getPublicUrl(u.path).data.publicUrl}
+          />
+        ))}
       </ul>
       <p>
         <Link href="/account">Back to your account</Link>
