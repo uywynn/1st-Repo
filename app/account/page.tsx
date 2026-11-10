@@ -15,6 +15,9 @@ export default async function AccountPage() {
       <p>
         <Link href="/upload">Upload photos and videos</Link>
       </p>
+      <p>
+        <Link href="/wall">Open the wall</Link>
+      </p>
       <form action={logOut}>
         <button type="submit">Log out</button>
       </form>
