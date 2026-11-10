@@ -1,7 +1,10 @@
 // Runs before every page loads. It keeps the sign-in cookie fresh,
-// and sends signed-out visitors away from /account to /login.
+// and sends signed-out visitors away from private pages to /login.
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+
+// Pages only signed-in people may open.
+const PRIVATE_PAGES = ["/account", "/upload"];
 
 export async function proxy(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -26,7 +29,9 @@ export async function proxy(request: NextRequest) {
   });
 
   const { data } = await supabase.auth.getUser();
-  if (!data.user && request.nextUrl.pathname.startsWith("/account")) {
+  const path = request.nextUrl.pathname;
+  const isPrivate = PRIVATE_PAGES.some((p) => path === p || path.startsWith(p + "/"));
+  if (!data.user && isPrivate) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
   return response;
