@@ -3,7 +3,7 @@
 // Every few seconds it re-reads the uploads list from Supabase: each new upload is shown
 // large in the middle first, then joins the falling collection; deleted ones stop falling.
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createBrowserSupabase } from "../_lib/supabase-browser";
+import { createBrowserSupabase } from "./supabase-browser";
 
 export type WallItem = { id: string; kind: string; url: string };
 type Falling = { key: number; item: WallItem; left: number };
@@ -30,7 +30,7 @@ function Media({ item }: { item: WallItem }) {
   );
 }
 
-export default function Wall({ initialItems }: { initialItems: WallItem[] }) {
+export default function Wall({ initialItems, wallId }: { initialItems: WallItem[]; wallId: string }) {
   const pool = useRef<WallItem[]>(initialItems); // everything that can fall
   const order = useRef<WallItem[]>([]); // the shuffled turn order for this round
   const seen = useRef(new Set(initialItems.map((i) => i.id)));
@@ -71,6 +71,7 @@ export default function Wall({ initialItems }: { initialItems: WallItem[] }) {
       const { data, error } = await supabase
         .from("uploads")
         .select("id, path, kind")
+        .eq("wall_id", wallId)
         .order("created_at", { ascending: true });
       if (error || !data) return; // try again next time
 
@@ -98,7 +99,7 @@ export default function Wall({ initialItems }: { initialItems: WallItem[] }) {
       }
     }, CHECK_EVERY_MS);
     return () => clearInterval(timer);
-  }, [showNext]);
+  }, [showNext, wallId]);
 
   // When the spotlight finishes: add the item to the falling pool, drop it now, show the next one.
   function spotlightDone() {
