@@ -48,14 +48,16 @@ Last updated: 2026-11-10
 - Supabase security check: "leaked password protection" is off. Not changed; it was off from the start.
 
 ## Next session
-- Start Slice 5: multiple photo walls (the only ACTIVE slice). Slice 6 (share a photo wall) is pending; do not start it until all four Slice 5 criteria pass on the live site.
+- Start Slice 5: multiple photo walls (the only ACTIVE slice). Slice 6 (share and join a photo wall) is pending; do not start it until all four Slice 5 criteria pass on the live site.
 - Owner's decisions (2026-11-10):
   - two slices: walls first, then sharing
   - anyone with a wall's link must sign up or log in (no account-less guests yet; that stays in the Backlog)
   - the 10 existing uploads move to a wall named "First wall" owned by wynn-test-2
   - anyone signed in who has a wall's link can open its falling screen, the same rule as uploading
   - the account that creates a wall is that wall's admin
+  - /account has two sections: "Walls you created" (Slice 5) and "Walls you joined" (Slice 6). A signed-in person who opens a wall's link joins it, and it stays under "Walls you joined", so they can get back without the link. Nobody can find a wall they were never given the link to.
 - Slice 5 needs Supabase changes: a walls table (name, random code, creator), a wall link on each upload, updated access rules, moving the existing uploads to "First wall", and replacing the single global admin (the admins table) with per-wall admins. Say exactly what is being created and why, and get the owner's OK, before doing it.
+- Slice 6 will need one more Supabase change: a list of who has joined which wall. Explain it and get the owner's OK first.
 - Slice 5 makes /upload, /wall and /manage per-wall (/w/<code>/...). The old addresses send you to /account.
 - Before a real event: the owner's real account should create the real wall, so it is that wall's admin.
 - Lesson from Slice 4: before marking a slice done, confirm each check in Supabase's request log where possible.
