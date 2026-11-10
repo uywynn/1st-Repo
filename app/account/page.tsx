@@ -7,6 +7,7 @@ export default async function AccountPage() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
   if (!data.user) redirect("/login");
+  const { data: isAdmin } = await supabase.rpc("is_admin");
 
   return (
     <>
@@ -18,6 +19,11 @@ export default async function AccountPage() {
       <p>
         <Link href="/wall">Open the wall</Link>
       </p>
+      {isAdmin && (
+        <p>
+          <Link href="/manage">Manage all uploads (admin)</Link>
+        </p>
+      )}
       <form action={logOut}>
         <button type="submit">Log out</button>
       </form>

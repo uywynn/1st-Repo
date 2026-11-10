@@ -1,7 +1,7 @@
 "use client";
 // The full-screen wall: photos and videos fall down a dark screen.
-// Every few seconds it asks Supabase for new uploads; each new one is shown
-// large in the middle first, then joins the falling collection.
+// Every few seconds it re-reads the uploads list from Supabase: each new upload is shown
+// large in the middle first, then joins the falling collection; deleted ones stop falling.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createBrowserSupabase } from "../_lib/supabase-browser";
 
@@ -30,7 +30,7 @@ function Media({ item }: { item: WallItem }) {
   );
 }
 
-export default function Wall({ initialItems, since }: { initialItems: WallItem[]; since: string }) {
+export default function Wall({ initialItems }: { initialItems: WallItem[] }) {
   const pool = useRef<WallItem[]>(initialItems); // everything that can fall
   const order = useRef<WallItem[]>([]); // the shuffled turn order for this round
   const seen = useRef(new Set(initialItems.map((i) => i.id)));
@@ -64,19 +64,24 @@ export default function Wall({ initialItems, since }: { initialItems: WallItem[]
     return () => clearInterval(timer);
   }, [drop]);
 
-  // Look for new uploads every CHECK_EVERY_MS.
+  // Every CHECK_EVERY_MS, fetch the full list: show anything new, and drop anything deleted.
   useEffect(() => {
     const supabase = createBrowserSupabase();
-    let cursor = since;
     const timer = setInterval(async () => {
       const { data, error } = await supabase
         .from("uploads")
-        .select("id, path, kind, created_at")
-        .gt("created_at", cursor)
+        .select("id, path, kind")
         .order("created_at", { ascending: true });
       if (error || !data) return; // try again next time
+
+      const current = new Set(data.map((r) => r.id));
+      const keep = (i: WallItem) => current.has(i.id);
+      pool.current = pool.current.filter(keep);
+      order.current = order.current.filter(keep);
+      waiting.current = waiting.current.filter(keep);
+      setIsEmpty(pool.current.length === 0);
+
       for (const row of data) {
-        cursor = row.created_at;
         if (seen.current.has(row.id)) continue;
         seen.current.add(row.id);
         waiting.current.push({
@@ -85,10 +90,15 @@ export default function Wall({ initialItems, since }: { initialItems: WallItem[]
           url: supabase.storage.from("uploads").getPublicUrl(row.path).data.publicUrl,
         });
       }
-      if (!spotlightRef.current) showNext();
+      // If the item in the middle was deleted, take it away now.
+      if (spotlightRef.current && !current.has(spotlightRef.current.id)) {
+        showNext();
+      } else if (!spotlightRef.current) {
+        showNext();
+      }
     }, CHECK_EVERY_MS);
     return () => clearInterval(timer);
-  }, [since, showNext]);
+  }, [showNext]);
 
   // When the spotlight finishes: add the item to the falling pool, drop it now, show the next one.
   function spotlightDone() {
