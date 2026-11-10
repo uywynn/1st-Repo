@@ -48,8 +48,14 @@ Last updated: 2026-11-10
 - Supabase security check: "leaked password protection" is off. Not changed; it was off from the start.
 
 ## Next session
-- No slice is ACTIVE. Slices 1–4 are done.
-- The owner picks what comes next from the Backlog in roadmap.md. A docs task then adds it as a new slice with done-criteria and marks it ACTIVE, before any feature work starts.
-- Possible next pick, the owner's call: password reset (people who forget their password are currently stuck).
-- Before a real event: make the owner's real account the admin, instead of the fake wynn-test-2 (a one-line Supabase change, done in a session that says so first).
-- Lesson from Slice 4: before marking a slice done, confirm each check in Supabase's request log where possible. The "done" reports and the log disagreed twice before the checks were really run.
+- Start Slice 5: multiple photo walls (the only ACTIVE slice). Slice 6 (share a photo wall) is pending; do not start it until all four Slice 5 criteria pass on the live site.
+- Owner's decisions (2026-11-10):
+  - two slices: walls first, then sharing
+  - anyone with a wall's link must sign up or log in (no account-less guests yet; that stays in the Backlog)
+  - the 10 existing uploads move to a wall named "First wall" owned by wynn-test-2
+  - anyone signed in who has a wall's link can open its falling screen, the same rule as uploading
+  - the account that creates a wall is that wall's admin
+- Slice 5 needs Supabase changes: a walls table (name, random code, creator), a wall link on each upload, updated access rules, moving the existing uploads to "First wall", and replacing the single global admin (the admins table) with per-wall admins. Say exactly what is being created and why, and get the owner's OK, before doing it.
+- Slice 5 makes /upload, /wall and /manage per-wall (/w/<code>/...). The old addresses send you to /account.
+- Before a real event: the owner's real account should create the real wall, so it is that wall's admin.
+- Lesson from Slice 4: before marking a slice done, confirm each check in Supabase's request log where possible.
