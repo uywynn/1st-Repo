@@ -10,6 +10,7 @@ Last updated: 2026-11-10
 - Slice 2 (upload photos and videos) is done: all four criteria passed on the live site on 2026-11-10, checked by the owner. Page: /upload, linked from /account.
 - Slice 3 (the falling wall) is done: all four criteria passed on the live site on 2026-11-10, checked by the owner. Page: /wall, linked from /account.
 - The roadmap's "What Done means" is reached: all three slices pass on the live site.
+- Slice 4 (deleting uploads) is done: all four criteria passed on the live site on 2026-11-10, checked by the owner and confirmed in the Supabase request log (a guest delete by wynn-test-3, admin deletes by wynn-test-2). Guests delete their own uploads on /upload; the admin deletes any upload on /manage.
 
 ## Broken or flaky
 - Nothing known.
@@ -23,9 +24,15 @@ Last updated: 2026-11-10
   - a public storage bucket "uploads": images and videos only, 50 MB per file. Anyone with a file's exact link can view it; links are random and not listable.
   - a table "uploads": id, user_id, path, kind (photo or video), created_at.
   - access rules: signed-in users can upload only into a folder named after their own user id, and can read the whole uploads list.
+- Supabase setup from Slice 4 (applied with the owner's OK; the exact SQL is in pull request #9):
+  - a table "admins" holding the admin's account ID (currently wynn-test-2@example.com). It is matched by ID, not email, because Confirm email is off. It has no access rules on purpose, so the app can't read or change it.
+  - a function is_admin() that answers only for the signed-in person.
+  - delete rules: your own files and rows, or any if you are the admin; plus a read rule on the bucket, which Supabase needs before it allows deleting.
+- Deleting is permanent (no undo): app/_lib/delete-actions.ts removes the row first, then the file.
+- Test accounts (all fake): wynn-test-2 (admin), wynn-test-3, wynn-test-4.
 - Files go straight from the browser to Supabase (app/_lib/supabase-browser.ts), because Vercel refuses requests over about 4.5 MB sent to our server.
-- Pages only signed-in people can open are listed in PRIVATE_PAGES in proxy.ts: /account, /upload, /wall.
-- The wall (app/wall/wall.tsx) asks Supabase for new uploads every 4 seconds (polling), with no Supabase Realtime. One item starts falling every 0.7 s, in a shuffled order.
+- Pages only signed-in people can open are listed in PRIVATE_PAGES in proxy.ts: /account, /upload, /wall, /manage.
+- The wall (app/wall/wall.tsx) re-reads the whole uploads list every 4 seconds (polling, with no Supabase Realtime): new items go to the middle display, and deleted items stop falling. One item starts falling every 0.7 s, in a shuffled order.
 - Fall speed: one number in app/globals.css (`fall 5.5s`), which is about 4.8 s from the top edge to the bottom edge. The middle display lasts 5 s (`spotlight 5s`).
 - Vercel Framework Preset is set to Next.js. It was "Other" at first, because the project was created before any code existed, and that broke the build ("No Output Directory named public").
 - Vercel environment variables, set for Production and Preview: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. Values live only in Vercel > 1st-repo > Settings > Environment Variables. Never in chat, prompts, or repo files.
@@ -41,6 +48,8 @@ Last updated: 2026-11-10
 - Supabase security check: "leaked password protection" is off. Not changed; it was off from the start.
 
 ## Next session
-- Start Slice 4: deleting uploads (the only ACTIVE slice), added on 2026-11-10 after the first three slices were done.
-- Owner's decisions: guests can delete their own uploads; one admin (the owner) can delete anyone's on a new /manage page; deleting removes the file and its row for good (no undo); an open /wall drops deleted items within 10 seconds without a refresh.
-- Slice 4 needs Supabase changes: a way to mark the admin account, and delete rules for the storage bucket and the uploads table. Say exactly what is being created and why, and ask the owner which account is the admin, before doing it.
+- No slice is ACTIVE. Slices 1–4 are done.
+- The owner picks what comes next from the Backlog in roadmap.md. A docs task then adds it as a new slice with done-criteria and marks it ACTIVE, before any feature work starts.
+- Possible next pick, the owner's call: password reset (people who forget their password are currently stuck).
+- Before a real event: make the owner's real account the admin, instead of the fake wynn-test-2 (a one-line Supabase change, done in a session that says so first).
+- Lesson from Slice 4: before marking a slice done, confirm each check in Supabase's request log where possible. The "done" reports and the log disagreed twice before the checks were really run.
