@@ -41,6 +41,6 @@ Last updated: 2026-11-10
 - Supabase security check: "leaked password protection" is off. Not changed; it was off from the start.
 
 ## Next session
-- No slice is ACTIVE. The roadmap is done.
-- The owner picks what comes next from the Backlog in roadmap.md. A docs task then adds it as a new slice with done-criteria and marks it ACTIVE, before any feature work starts.
-- Possible first picks, the owner's call: password reset (people who forget their password are currently stuck), and deleting or hiding uploads (there's currently no way to remove a photo).
+- Start Slice 4: deleting uploads (the only ACTIVE slice), added on 2026-11-10 after the first three slices were done.
+- Owner's decisions: guests can delete their own uploads; one admin (the owner) can delete anyone's on a new /manage page; deleting removes the file and its row for good (no undo); an open /wall drops deleted items within 10 seconds without a refresh.
+- Slice 4 needs Supabase changes: a way to mark the admin account, and delete rules for the storage bucket and the uploads table. Say exactly what is being created and why, and ask the owner which account is the admin, before doing it.
