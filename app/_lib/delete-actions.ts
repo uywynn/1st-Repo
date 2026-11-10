@@ -1,6 +1,7 @@
 "use server";
-// Deleting an upload for good: its listing row first, then the file itself.
-// Supabase's rules decide who may delete what: your own uploads, or anything if you are the admin.
+// Deleting an upload for good: the file first, then its listing row.
+// Supabase's rules decide who may delete what: your own uploads,
+// or anything on a wall you created.
 import { revalidatePath } from "next/cache";
 import { createClient } from "./supabase";
 
@@ -9,16 +10,17 @@ export async function deleteUpload(id: string): Promise<{ error: string | null }
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return { error: "Please log in again." };
 
-  // Remove the listing. If the rules say no, nothing is removed and we stop here.
-  const { data: rows, error } = await supabase.from("uploads").delete().eq("id", id).select("path");
-  if (error) return { error: "Couldn't delete this upload. Please try again." };
-  if (!rows?.length) return { error: "You can't delete this upload, or it's already gone." };
+  const { data: row } = await supabase.from("uploads").select("path").eq("id", id).maybeSingle();
+  if (!row) return { error: "This upload is already gone." };
 
-  // Remove the file, so its link stops working.
-  const { error: fileError } = await supabase.storage.from("uploads").remove([rows[0].path]);
-  if (fileError) return { error: "The upload was removed from the list, but its file couldn't be deleted." };
+  // The file goes first: a wall's creator is allowed to delete it only while its listing still exists.
+  const { data: removed, error: fileError } = await supabase.storage.from("uploads").remove([row.path]);
+  if (fileError) return { error: "Couldn't delete this upload. Please try again." };
+  if (!removed?.length) return { error: "You can't delete this upload." };
 
-  revalidatePath("/upload");
-  revalidatePath("/manage");
+  const { error: rowError } = await supabase.from("uploads").delete().eq("id", id);
+  if (rowError) return { error: "The file was deleted, but it is still listed. Please try again." };
+
+  revalidatePath("/", "layout");
   return { error: null };
 }

@@ -2,11 +2,11 @@
 // The "choose a file, click Upload" form.
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createBrowserSupabase } from "../_lib/supabase-browser";
+import { createBrowserSupabase } from "./supabase-browser";
 
 const MAX_BYTES = 50 * 1024 * 1024; // 50 MB, the same limit as the Supabase bucket
 
-export default function UploadForm({ userId }: { userId: string }) {
+export default function UploadForm({ userId, wallId }: { userId: string; wallId: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -40,7 +40,7 @@ export default function UploadForm({ userId }: { userId: string }) {
       return setError(`Upload failed: ${uploadError.message}`);
     }
 
-    const { error: rowError } = await supabase.from("uploads").insert({ path, kind });
+    const { error: rowError } = await supabase.from("uploads").insert({ path, kind, wall_id: wallId });
     setBusy(false);
     if (rowError) return setError(`Upload failed: ${rowError.message}`);
 
