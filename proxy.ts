@@ -4,7 +4,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // Pages only signed-in people may open.
-const PRIVATE_PAGES = ["/account", "/upload"];
+const PRIVATE_PAGES = ["/account", "/upload", "/wall"];
 
 export async function proxy(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
