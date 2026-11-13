@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../_lib/supabase";
-import { getWall } from "../../../_lib/walls";
+import { getWall, joinWall } from "../../../_lib/walls";
 import FallingWall, { type WallItem } from "../../../_lib/falling-wall";
 
 // A wall's full-screen falling display.
@@ -10,6 +10,7 @@ export default async function FallingScreenPage({ params }: { params: Promise<{ 
   const { data } = await supabase.auth.getUser();
   if (!data.user) redirect("/login");
 
+  await joinWall(supabase, code);
   const wall = await getWall(supabase, code);
   if (!wall) redirect("/account");
 

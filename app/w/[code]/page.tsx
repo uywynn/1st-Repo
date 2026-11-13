@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "../../_lib/supabase";
-import { getWall } from "../../_lib/walls";
+import { getWall, joinWall } from "../../_lib/walls";
 import UploadForm from "../../_lib/upload-form";
 import UploadTile from "../../_lib/upload-tile";
+import ShareButton from "../../_lib/share-button";
 
 // A wall's own page: upload to it, and see and delete your uploads on it.
 export default async function WallHomePage({ params }: { params: Promise<{ code: string }> }) {
@@ -12,6 +13,7 @@ export default async function WallHomePage({ params }: { params: Promise<{ code:
   const { data } = await supabase.auth.getUser();
   if (!data.user) redirect("/login");
 
+  await joinWall(supabase, code);
   const wall = await getWall(supabase, code);
   if (!wall) redirect("/account");
   const isAdmin = wall.owner_id === data.user.id;
@@ -29,6 +31,7 @@ export default async function WallHomePage({ params }: { params: Promise<{ code:
       <p className="wall-links">
         <Link href={`/w/${wall.code}/wall`}>Open the falling screen</Link>
         {isAdmin && <Link href={`/w/${wall.code}/manage`}>Manage this wall</Link>}
+        <ShareButton code={wall.code} name={wall.name} />
       </p>
       <UploadForm userId={data.user.id} wallId={wall.id} />
 

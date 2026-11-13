@@ -16,6 +16,14 @@ export default async function AccountPage() {
     .eq("owner_id", data.user.id)
     .order("created_at", { ascending: false });
 
+  // Walls this person joined by opening their link, newest first.
+  const { data: memberships } = await supabase
+    .from("wall_members")
+    .select("joined_at, walls(code, name)")
+    .eq("user_id", data.user.id)
+    .order("joined_at", { ascending: false });
+  const joined = (memberships ?? []).flatMap((m) => (m.walls ? [m.walls].flat() : []));
+
   return (
     <>
       <h1>Your account</h1>
@@ -31,6 +39,16 @@ export default async function AccountPage() {
         ))}
       </ul>
       <CreateWallForm />
+
+      <h2>Walls you joined</h2>
+      {!joined.length && <p>None yet. Open a wall&apos;s link to join it.</p>}
+      <ul className="wall-list">
+        {joined.map((w) => (
+          <li key={w.code}>
+            <Link href={`/w/${w.code}`}>{w.name}</Link>
+          </li>
+        ))}
+      </ul>
 
       <form action={logOut} className="logout">
         <button type="submit">Log out</button>
