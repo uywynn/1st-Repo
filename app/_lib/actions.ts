@@ -6,6 +6,13 @@ import { createClient } from "./supabase";
 
 export type FormState = { error: string | null };
 
+// Where to go after signing up or logging in: a wall address if one was given, else /account.
+// Only addresses on this site starting with /w/ are accepted.
+function nextPage(formData: FormData) {
+  const next = String(formData.get("next") ?? "");
+  return /^\/w\/[A-Za-z0-9]+(\/(wall|manage))?$/.test(next) ? next : "/account";
+}
+
 function readForm(formData: FormData) {
   return {
     email: String(formData.get("email") ?? "").trim(),
@@ -25,7 +32,7 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     // Happens when Supabase's "Confirm email" setting is on.
     return { error: "Check your email to confirm your account, then log in." };
   }
-  redirect("/account");
+  redirect(nextPage(formData));
 }
 
 export async function logIn(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -38,7 +45,7 @@ export async function logIn(_prev: FormState, formData: FormData): Promise<FormS
     }
     return { error: "Something went wrong. Please try again." };
   }
-  redirect("/account");
+  redirect(nextPage(formData));
 }
 
 export async function logOut() {

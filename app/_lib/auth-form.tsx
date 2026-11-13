@@ -7,13 +7,15 @@ type Props = {
   action: (prev: FormState, formData: FormData) => Promise<FormState>;
   buttonLabel: string;
   minPasswordLength?: number;
+  next?: string;
 };
 
-export default function AuthForm({ action, buttonLabel, minPasswordLength }: Props) {
+export default function AuthForm({ action, buttonLabel, minPasswordLength, next }: Props) {
   const [state, formAction, pending] = useActionState(action, { error: null });
 
   return (
     <form action={formAction} className="form">
+      {next && <input type="hidden" name="next" value={next} />}
       <label>
         Email
         <input type="email" name="email" required autoComplete="email" />

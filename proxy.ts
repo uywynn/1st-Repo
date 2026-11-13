@@ -32,7 +32,10 @@ export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const isPrivate = PRIVATE_PAGES.some((p) => path === p || path.startsWith(p + "/"));
   if (!data.user && isPrivate) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const login = new URL("/login", request.url);
+    // After logging in or signing up, bring people back to the wall they were opening.
+    if (path.startsWith("/w/")) login.searchParams.set("next", path);
+    return NextResponse.redirect(login);
   }
   return response;
 }
