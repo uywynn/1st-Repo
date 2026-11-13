@@ -11,6 +11,7 @@ Last updated: 2026-11-10
 - Slice 3 (the falling wall) is done: all four criteria passed on the live site on 2026-11-10, checked by the owner. Page: /wall, linked from /account.
 - The roadmap's "What Done means" is reached: all three slices pass on the live site.
 - Slice 4 (deleting uploads) is done: all four criteria passed on the live site on 2026-11-10, checked by the owner and confirmed in the Supabase request log (a guest delete by wynn-test-3, admin deletes by wynn-test-2). Guests delete their own uploads on /upload; the admin deletes any upload on /manage.
+- Slice 5 (multiple photo walls) is done: all four criteria passed on the preview and, as reported by the owner, on the live site (2026-11-13). Not yet confirmed in Supabase's request log, because the Supabase connection was down that session. Any account can create walls from /account; each wall has /w/<code> (upload), /w/<code>/wall (falling screen) and /w/<code>/manage (creator only).
 
 ## Broken or flaky
 - Nothing known.
@@ -24,15 +25,18 @@ Last updated: 2026-11-10
   - a public storage bucket "uploads": images and videos only, 50 MB per file. Anyone with a file's exact link can view it; links are random and not listable.
   - a table "uploads": id, user_id, path, kind (photo or video), created_at.
   - access rules: signed-in users can upload only into a folder named after their own user id, and can read the whole uploads list.
-- Supabase setup from Slice 4 (applied with the owner's OK; the exact SQL is in pull request #9):
-  - a table "admins" holding the admin's account ID (currently wynn-test-2@example.com). It is matched by ID, not email, because Confirm email is off. It has no access rules on purpose, so the app can't read or change it.
-  - a function is_admin() that answers only for the signed-in person.
-  - delete rules: your own files and rows, or any if you are the admin; plus a read rule on the bucket, which Supabase needs before it allows deleting.
-- Deleting is permanent (no undo): app/_lib/delete-actions.ts removes the row first, then the file.
-- Test accounts (all fake): wynn-test-2 (admin), wynn-test-3, wynn-test-4.
+- Supabase setup now (Slice 5 replaced Slice 4's single admin; the exact SQL is in pull request #12):
+  - a table "walls": id, code (12 random characters, used in the address), name (1–60 characters), owner_id (the creator, who is that wall's admin), created_at.
+  - uploads.wall_id: every upload belongs to one wall. The 10 uploads from before Slice 5 are on "First wall", owned by wynn-test-2.
+  - helper checks: owns_wall, can_access_wall (today: creator only; Slice 6 adds "or has joined"), can_access_upload_path, owns_wall_of_path. They run with owner rights so the rules don't loop.
+  - rules: you see walls you created and their uploads, plus your own uploads; you upload only into your own folder, on walls you can access; you delete your own uploads, or anything on a wall you created. Files can only be listed by their owner or by people with access to their wall.
+  - the old "admins" table and is_admin() were removed.
+  - a wall's "see" rule checks owner_id directly as well as the helper, because a brand-new wall isn't visible to the helper yet while it is being saved.
+- Deleting is permanent (no undo): app/_lib/delete-actions.ts removes the file first, then its row (a wall's creator may delete a file only while its row still exists).
+- Test accounts (all fake): wynn-test-2 (owns "First wall"), wynn-test-3, wynn-test-4, wynn-test-5 and wynn-test-6 (each made test walls in the Slice 5 checks).
 - Files go straight from the browser to Supabase (app/_lib/supabase-browser.ts), because Vercel refuses requests over about 4.5 MB sent to our server.
-- Pages only signed-in people can open are listed in PRIVATE_PAGES in proxy.ts: /account, /upload, /wall, /manage.
-- The wall (app/wall/wall.tsx) re-reads the whole uploads list every 4 seconds (polling, with no Supabase Realtime): new items go to the middle display, and deleted items stop falling. One item starts falling every 0.7 s, in a shuffled order.
+- Pages only signed-in people can open are listed in PRIVATE_PAGES in proxy.ts: /account, /upload, /wall, /manage, /w. The old /upload, /wall and /manage now just send you to /account.
+- The falling screen (app/_lib/falling-wall.tsx) re-reads its wall's uploads list every 4 seconds (polling, with no Supabase Realtime): new items go to the middle display, and deleted items stop falling. One item starts falling every 0.7 s, in a shuffled order.
 - Fall speed: one number in app/globals.css (`fall 5.5s`), which is about 4.8 s from the top edge to the bottom edge. The middle display lasts 5 s (`spotlight 5s`).
 - Vercel Framework Preset is set to Next.js. It was "Other" at first, because the project was created before any code existed, and that broke the build ("No Output Directory named public").
 - Vercel environment variables, set for Production and Preview: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. Values live only in Vercel > 1st-repo > Settings > Environment Variables. Never in chat, prompts, or repo files.
@@ -48,16 +52,13 @@ Last updated: 2026-11-10
 - Supabase security check: "leaked password protection" is off. Not changed; it was off from the start.
 
 ## Next session
-- Start Slice 5: multiple photo walls (the only ACTIVE slice). Slice 6 (share and join a photo wall) is pending; do not start it until all four Slice 5 criteria pass on the live site.
-- Owner's decisions (2026-11-10):
-  - two slices: walls first, then sharing
-  - anyone with a wall's link must sign up or log in (no account-less guests yet; that stays in the Backlog)
-  - the 10 existing uploads move to a wall named "First wall" owned by wynn-test-2
-  - anyone signed in who has a wall's link can open its falling screen, the same rule as uploading
-  - the account that creates a wall is that wall's admin
-  - /account has two sections: "Walls you created" (Slice 5) and "Walls you joined" (Slice 6). A signed-in person who opens a wall's link joins it, and it stays under "Walls you joined", so they can get back without the link. Nobody can find a wall they were never given the link to.
-- Slice 5 needs Supabase changes: a walls table (name, random code, creator), a wall link on each upload, updated access rules, moving the existing uploads to "First wall", and replacing the single global admin (the admins table) with per-wall admins. Say exactly what is being created and why, and get the owner's OK, before doing it.
-- Slice 6 will need one more Supabase change: a list of who has joined which wall. Explain it and get the owner's OK first.
-- Slice 5 makes /upload, /wall and /manage per-wall (/w/<code>/...). The old addresses send you to /account.
+- First: confirm the Slice 5 live checks in Supabase's request log (sign-up of wynn-test-6, two walls created, an upload on one). If they don't show, tell the owner before going on.
+- Then start Slice 6: share and join a photo wall (the only ACTIVE slice).
+- Owner's decisions for Slice 6:
+  - anyone with a wall's link must sign up or log in; after that they land straight on that wall
+  - opening a wall's link while signed in joins it; joined walls are listed under "Walls you joined" on /account, so people can get back without the link
+  - nobody can find a wall they were never given the link to
+  - members can upload, delete their own uploads, and open the falling screen; only the creator can manage
+- Slice 6 needs a Supabase change: a list of who has joined which wall, a way to join by code (non-members can't look a wall up), and can_access_wall extended to members. Explain it and get the owner's OK first.
+- Apply Supabase changes so the live code keeps working until the new code is merged. Slice 5 broke live uploads for a while because the database changed before the code did.
 - Before a real event: the owner's real account should create the real wall, so it is that wall's admin.
-- Lesson from Slice 4: before marking a slice done, confirm each check in Supabase's request log where possible.
