@@ -24,7 +24,7 @@ Page names used below: /signup, /login, /account, /upload, /wall, /manage. From 
 - Renaming or deleting a photo wall.
 - More than one admin per wall.
 - Guest access without an account, and sign in with Google.
-- Password reset.
+- Password reset. Deferred on 2026-11-24 (owner's call): Supabase's built-in email only delivers to the project's own team, a few messages an hour, and is not meant for real use, so reaching guests needs an email-sending service (a new account) and usually a domain the owner buys. Until then, a guest who forgets their password signs up again with a new email and reopens the wall's link; their earlier photos stay on the wall, and only the wall's creator can delete them. Revisit if accounts will be reused across many events.
 - Hiding uploads with undo, and moderation beyond deleting (e.g. approving uploads before they show).
 - Downloading everything from an event.
 - Thumbnails, compression, and videos over 40 MB.
