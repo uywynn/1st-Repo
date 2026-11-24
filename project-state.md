@@ -14,13 +14,14 @@ Last updated: 2026-11-10
 - Slice 5 (multiple photo walls) is done: all four criteria passed on the live site, checked by the owner and confirmed in Supabase on 2026-11-13 (wynn-test-6 created Test Wall A and B, with one upload on A only). Any account can create walls from /account; each wall has /w/<code> (upload), /w/<code>/wall (falling screen) and /w/<code>/manage (creator only).
 - Slice 6 (share and join a photo wall) is done: all four criteria passed on the live site on 2026-11-13, checked by the owner and confirmed in Supabase (wynn-test-8 signed up from Test Wall A's link, joined it, uploaded a .jpg and an .mp4, deleted its own .mp4, and uploaded again). Each wall page has a Share button; /account lists "Walls you created" and "Walls you joined".
 - Slice 7 (leave a joined wall) is done: all four criteria passed on the live site on 2026-11-24, checked by the owner and confirmed in Supabase's request log (wynn-test-8 left Test Wall A at 23:28 UTC and rejoined from the link at 23:29; its 2 photos stayed on the wall). People who joined a wall see "Leave this wall" on its page; the creator does not.
+- Slice 8 (download all photos from a wall) is done: all four criteria passed on the live site on 2026-11-24, as reported by the owner. Supabase only partly confirms it ("Empty Wall" exists on wynn-test-6's account); file downloads are served from a cache and barely appear in Supabase's log, so the download itself can't be confirmed there. The creator's manage page has "Download all photos", which builds "<wall name>.zip" in the browser.
 
 ## Broken or flaky
 - Nothing known.
 
 ## Environment notes
 - Stack: Next.js 16 (App Router), React 19, TypeScript 5, plain CSS, Supabase, deployed on Vercel.
-- Approved packages: next, react, react-dom, @supabase/supabase-js, @supabase/ssr; build-only: typescript, @types/react, @types/node. Anything else needs the owner's OK first.
+- Approved packages: next, react, react-dom, @supabase/supabase-js, @supabase/ssr, fflate (builds the .zip in Slice 8, approved 2026-11-24); build-only: typescript, @types/react, @types/node. Anything else needs the owner's OK first.
 - Approved top-level folder: app/ (the pages). Shared code lives in app/_lib/ (the underscore means "not a page").
 - Next.js 16 calls the before-every-page file proxy.ts, not middleware.ts. It keeps the sign-in cookie fresh and sends signed-out visitors from /account to /login.
 - Supabase setup from Slice 2 (applied with the owner's OK; the exact SQL is in pull request #4):
@@ -57,10 +58,9 @@ Last updated: 2026-11-10
 - Supabase security check: "leaked password protection" is off. Not changed; it was off from the start.
 
 ## Next session
-- Start Slice 8: download all photos from a wall (the only ACTIVE slice).
-- Owner's decisions (2026-11-24): a "Download all photos" button on a wall's manage page (creator only) saves every upload on that wall as one .zip named after the wall; the owner then adds the files to a Google Photos album and shares it there. No Google account setup, keys or Google API.
-- Slice 8 needs one small code package to build the .zip. Name it, say why, and get the owner's OK before adding it (CLAUDE.md: no new dependency without asking). Building the .zip in the browser avoids Vercel's request size and time limits; the files are already public links.
-- Most likely no Supabase change is needed (the creator can already read every file on their wall). Check before building.
+- No slice is ACTIVE. Slices 1–8 are done.
+- The owner picks what comes next from the Backlog in roadmap.md. A docs task then adds it as a new slice with done-criteria and marks it ACTIVE, before any feature work starts.
+- Checking downloads: Supabase's log doesn't show file downloads reliably (they come from a cache). For a slice about viewing or downloading files, plan another way to confirm the checks.
 - Preview links are behind Vercel's login (Deployment Protection). Test signed-out steps on a preview by logging out of the app in a normal window, not in a private window. The live site has no such guard.
 - Apply Supabase changes so the live code keeps working until the new code is merged (Slice 5 broke live uploads for a while; Slice 6's additive change did not).
 - Before a real event: the owner's real account should create the real wall, so it is that wall's admin.
