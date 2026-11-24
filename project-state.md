@@ -49,6 +49,7 @@ Last updated: 2026-11-10
 - No npm run lint yet: the owner chose to skip it (it needs 2 more packages). npm run build still checks the code.
 - Fake test accounts exist in Supabase from the Slice 1 checks (e.g. wynn-test-1@example.com, wynn-test-2@example.com).
 - Decided: on the wall, every photo falls from the top of the screen to the bottom in about 5 seconds (owner's call). This is fast; it may need adjusting once seen live.
+- Decided against for now (2026-11-24): password reset. Supabase's built-in email only reaches the project's own team, so real resets need an email-sending service plus a domain. Workaround: a guest who forgets their password signs up again with a new email and reopens the wall's link. See the Backlog entry in roadmap.md.
 - Decided against for now: Google Photos sync (moved to Backlog because of Google's 2025 API limits and the new Google Cloud setup it needs).
 - Upload size: the bucket allows 50 MB per file, and an .mp4 under 40 MB uploaded fine on the live site. Supabase's own plan-wide limit has not been looked up.
 - Known gap: iPhone .mov videos may not play in some browsers (e.g. Chrome on Windows).
@@ -57,7 +58,7 @@ Last updated: 2026-11-10
 ## Next session
 - No slice is ACTIVE. Slices 1–6 are done.
 - The owner picks what comes next from the Backlog in roadmap.md. A docs task then adds it as a new slice with done-criteria and marks it ACTIVE, before any feature work starts.
-- Possible next picks, the owner's call: password reset (people who forget their password are currently stuck), and leaving a joined wall.
+- Possible next pick, the owner's call: leaving a joined wall. (Password reset was looked at on 2026-11-24 and deferred; see above.)
 - Preview links are behind Vercel's login (Deployment Protection). Test signed-out steps on a preview by logging out of the app in a normal window, not in a private window. The live site has no such guard.
 - Apply Supabase changes so the live code keeps working until the new code is merged (Slice 5 broke live uploads for a while; Slice 6's additive change did not).
 - Before a real event: the owner's real account should create the real wall, so it is that wall's admin.
