@@ -5,6 +5,7 @@ import { getWall, joinWall } from "../../_lib/walls";
 import UploadForm from "../../_lib/upload-form";
 import UploadTile from "../../_lib/upload-tile";
 import ShareButton from "../../_lib/share-button";
+import LeaveWallButton from "../../_lib/leave-wall-button";
 
 // A wall's own page: upload to it, and see and delete your uploads on it.
 export default async function WallHomePage({ params }: { params: Promise<{ code: string }> }) {
@@ -32,6 +33,8 @@ export default async function WallHomePage({ params }: { params: Promise<{ code:
         <Link href={`/w/${wall.code}/wall`}>Open the falling screen</Link>
         {isAdmin && <Link href={`/w/${wall.code}/manage`}>Manage this wall</Link>}
         <ShareButton code={wall.code} name={wall.name} />
+        {/* Anyone who can see a wall but didn't create it has joined it. */}
+        {!isAdmin && <LeaveWallButton wallId={wall.id} />}
       </p>
       <UploadForm userId={data.user.id} wallId={wall.id} />
 
