@@ -13,6 +13,7 @@ Last updated: 2026-11-10
 - Slice 4 (deleting uploads) is done: all four criteria passed on the live site on 2026-11-10, checked by the owner and confirmed in the Supabase request log (a guest delete by wynn-test-3, admin deletes by wynn-test-2). Guests delete their own uploads on /upload; the admin deletes any upload on /manage.
 - Slice 5 (multiple photo walls) is done: all four criteria passed on the live site, checked by the owner and confirmed in Supabase on 2026-11-13 (wynn-test-6 created Test Wall A and B, with one upload on A only). Any account can create walls from /account; each wall has /w/<code> (upload), /w/<code>/wall (falling screen) and /w/<code>/manage (creator only).
 - Slice 6 (share and join a photo wall) is done: all four criteria passed on the live site on 2026-11-13, checked by the owner and confirmed in Supabase (wynn-test-8 signed up from Test Wall A's link, joined it, uploaded a .jpg and an .mp4, deleted its own .mp4, and uploaded again). Each wall page has a Share button; /account lists "Walls you created" and "Walls you joined".
+- Slice 7 (leave a joined wall) is done: all four criteria passed on the live site on 2026-11-24, checked by the owner and confirmed in Supabase's request log (wynn-test-8 left Test Wall A at 23:28 UTC and rejoined from the link at 23:29; its 2 photos stayed on the wall). People who joined a wall see "Leave this wall" on its page; the creator does not.
 
 ## Broken or flaky
 - Nothing known.
@@ -31,7 +32,7 @@ Last updated: 2026-11-10
   - uploads.wall_id: every upload belongs to one wall. The 10 uploads from before Slice 5 are on "First wall", owned by wynn-test-2.
   - helper checks: owns_wall, can_access_wall (creator, or anyone who joined), can_access_upload_path, owns_wall_of_path. They run with owner rights so the rules don't loop.
   - rules: you see walls you created and their uploads, plus your own uploads; you upload only into your own folder, on walls you can access; you delete your own uploads, or anything on a wall you created. Files can only be listed by their owner or by people with access to their wall.
-  - a table "wall_members" (wall_id, user_id, joined_at): who joined which wall. You can only see your own rows; nobody inserts directly. join_wall(code) adds the signed-in person when they open a wall's link (not the creator, not a wrong code, not signed out). The exact SQL is in pull request #14.
+  - a table "wall_members" (wall_id, user_id, joined_at): who joined which wall. You can only see and delete your own rows (deleting = leaving, added in Slice 7, pull request #18); nobody inserts directly. join_wall(code) adds the signed-in person when they open a wall's link (not the creator, not a wrong code, not signed out). The exact SQL is in pull request #14.
   - the old "admins" table and is_admin() were removed.
   - a wall's "see" rule checks owner_id directly as well as the helper, because a brand-new wall isn't visible to the helper yet while it is being saved.
 - Deleting is permanent (no undo): app/_lib/delete-actions.ts removes the file first, then its row (a wall's creator may delete a file only while its row still exists).
@@ -56,12 +57,8 @@ Last updated: 2026-11-10
 - Supabase security check: "leaked password protection" is off. Not changed; it was off from the start.
 
 ## Next session
-- Start Slice 7: leave a joined wall (the only ACTIVE slice).
-- Owner's decisions (2026-11-24):
-  - a "Leave this wall" button on the wall's own page, shown only to people who joined it (not its creator), with an OK prompt
-  - leaving only removes the wall from "Walls you joined": the person's photos stay on the wall, and the creator can still delete them
-  - leaving is not a ban: opening the wall's link again rejoins it
-- Slice 7 needs one small Supabase change: a rule (or a leave_wall check) that lets a person remove their own membership row. Explain it and get the owner's OK first, and keep it additive so the live site keeps working.
+- No slice is ACTIVE. Slices 1–7 are done.
+- The owner picks what comes next from the Backlog in roadmap.md. A docs task then adds it as a new slice with done-criteria and marks it ACTIVE, before any feature work starts.
 - Preview links are behind Vercel's login (Deployment Protection). Test signed-out steps on a preview by logging out of the app in a normal window, not in a private window. The live site has no such guard.
 - Apply Supabase changes so the live code keeps working until the new code is merged (Slice 5 broke live uploads for a while; Slice 6's additive change did not).
 - Before a real event: the owner's real account should create the real wall, so it is that wall's admin.
