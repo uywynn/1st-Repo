@@ -60,3 +60,4 @@ button.delete { padding: 6px; font-size: 0.85rem; background: #fff; color: #b91c
 .share { display: inline-flex; align-items: center; gap: 8px; }
 .share button { padding: 4px 12px; font-size: 0.9rem; }
 button.leave { padding: 4px 12px; font-size: 0.9rem; background: #fff; color: #b91c1c; border: 1px solid #b91c1c; }
+.download-all { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
