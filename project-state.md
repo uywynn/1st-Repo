@@ -56,9 +56,12 @@ Last updated: 2026-11-10
 - Supabase security check: "leaked password protection" is off. Not changed; it was off from the start.
 
 ## Next session
-- No slice is ACTIVE. Slices 1–6 are done.
-- The owner picks what comes next from the Backlog in roadmap.md. A docs task then adds it as a new slice with done-criteria and marks it ACTIVE, before any feature work starts.
-- Possible next pick, the owner's call: leaving a joined wall. (Password reset was looked at on 2026-11-24 and deferred; see above.)
+- Start Slice 7: leave a joined wall (the only ACTIVE slice).
+- Owner's decisions (2026-11-24):
+  - a "Leave this wall" button on the wall's own page, shown only to people who joined it (not its creator), with an OK prompt
+  - leaving only removes the wall from "Walls you joined": the person's photos stay on the wall, and the creator can still delete them
+  - leaving is not a ban: opening the wall's link again rejoins it
+- Slice 7 needs one small Supabase change: a rule (or a leave_wall check) that lets a person remove their own membership row. Explain it and get the owner's OK first, and keep it additive so the live site keeps working.
 - Preview links are behind Vercel's login (Deployment Protection). Test signed-out steps on a preview by logging out of the app in a normal window, not in a private window. The live site has no such guard.
 - Apply Supabase changes so the live code keeps working until the new code is merged (Slice 5 broke live uploads for a while; Slice 6's additive change did not).
 - Before a real event: the owner's real account should create the real wall, so it is that wall's admin.
