@@ -15,3 +15,21 @@ export async function createWall(_prev: CreateWallState, formData: FormData): Pr
   if (error || !data) return { error: "Couldn't create the wall. Please try again." };
   redirect(`/w/${data.code}`);
 }
+
+// Leaving a wall you joined: removes it from "Walls you joined". Your photos stay on the wall.
+// Opening the wall's link again rejoins it.
+export async function leaveWall(wallId: string): Promise<{ error: string | null }> {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) return { error: "Please log in again." };
+
+  const { data, error } = await supabase
+    .from("wall_members")
+    .delete()
+    .eq("wall_id", wallId)
+    .eq("user_id", auth.user.id)
+    .select("wall_id");
+  if (error) return { error: "Couldn't leave the wall. Please try again." };
+  if (!data?.length) return { error: "You're not a member of this wall." };
+  redirect("/account");
+}
